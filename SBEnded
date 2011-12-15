@@ -1,0 +1,118 @@
+#!/usr/bin/env python
+
+'''
+Parse a sickbeard sqlite file and check for any ended shows
+now marked as continuing on thetvdb
+
+Written by Brett Pemberton, brett@whatevz.net
+Copyright (C) 2011
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
+
+import sys
+import getopt
+import os
+import sqlite3
+import tvdb_api
+
+verbose = False
+
+
+def check_shows(shows):
+
+    t = tvdb_api.Tvdb()
+
+    for (tvdb_id, show_name, status) in shows:
+        logger_nonewline("Checking", show_name)
+        if status == "Continuing":
+            logger("- status is Continuing, ignoring")
+        else:
+            show = t[show_name]
+            show_id = show['id']
+            if int(tvdb_id) != int(show_id):
+                print "Warning: Issue matching %s on tvdb. Got %s and %s" % (show_name, tvdb_id, show_id)
+            else:
+                show_status = show['status']
+                if show_status != status:
+                    print "Show %s with local status %s is now %s on thetvdb" % (show_name, status, show_status)
+                else:
+                    logger("- Local status matches thetvdb: ", status)
+    return
+
+
+def read_sickbeard_sqlite_file(sqlite_file):
+    conn = sqlite3.connect(sqlite_file)
+    cur = conn.cursor()
+    try:
+        cur.execute("select tvdb_id,show_name,status from tv_shows")
+    except sqlite3.DatabaseError, msg:
+        print "ERROR: Not a SickBeard sqlite file"
+        sys.exit(-1)
+    shows = cur.fetchall()
+
+    return shows
+
+
+def logger(*args, **kwargs):
+    message = ' '.join([str(x) for x in args])
+    if verbose:
+        print message
+
+
+def logger_nonewline(*args, **kwargs):
+    message = ' '.join([str(x) for x in args])
+    if verbose:
+        print message,
+
+
+def usage():
+    print "usage: SBEnded [-v] [-h] -s <sqlite file>"
+    print "   -s : sqlite file to use"
+    print "   -v : verbose"
+    print "   -h : help"
+
+
+if __name__ == "__main__":
+
+    sqlite_file = False
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'vhs:')
+    except getopt.GetoptError, err:
+        print str(err)   # will print something like "option -a not recognized"
+        usage()
+        sys.exit(2)
+    opts = dict(opts)
+
+    if '-v' in opts:
+        verbose = True
+
+    if '-h' in opts:
+        usage()
+        sys.exit(1)
+
+    if '-s' in opts:
+        sqlite_file = opts['-s']
+    else:
+        usage()
+        sys.exit(1)
+
+    if not os.path.isfile(sqlite_file):
+        print "ERROR: %s is not a file" % (sqlite_file)
+        sys.exit(-1)
+
+    shows = read_sickbeard_sqlite_file(sqlite_file)
+    check_shows(shows)

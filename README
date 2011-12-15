@@ -1,0 +1,7 @@
+Simple script to check all of your Sick-Beard 'Ended' shows.
+Makes sure none are now set to 'Continuing' on TheTVDB.
+
+Uses https://github.com/dbr/tvdb_api
+
+Written by Brett Pemberton, brett@whatevz.net
+Copyright (C) 2011 
