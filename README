@@ -3,5 +3,11 @@ Makes sure none are now set to 'Continuing' on TheTVDB.
 
 Uses https://github.com/dbr/tvdb_api
 
+usage: SBEnded [-v] [-h] [-f] -s <sqlite file>
+   -s : sqlite file to use
+   -f : fix local status
+   -v : verbose
+   -h : help
+
 Written by Brett Pemberton, brett@whatevz.net
 Copyright (C) 2011 
