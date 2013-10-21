@@ -62,6 +62,8 @@ def read_sickbeard_sqlite_file(sqlite_file):
         sys.exit(-1)
     shows = cur.fetchall()
 
+    conn.close()
+
     return shows
 
 
@@ -72,6 +74,8 @@ def update_sickbeard_sqlite_file(sqlite_file, shows):
         cur.execute("update tv_shows set status = 'Continuing' where tvdb_id = %s" % show)
 
     conn.commit()
+    conn.close()
+
     return shows
 
 
