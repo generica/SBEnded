@@ -36,21 +36,18 @@ def check_shows(shows):
     t = tvdb_api.Tvdb()
 
     for (tvdb_id, show_name, status) in shows:
-        if status == "Continuing":
-            log.info("Ignoring %s - status is Continuing" % (show_name))
+        log.info("Checking %s " % (show_name))
+        show = t[show_name]
+        show_id = show['id']
+        if int(tvdb_id) != int(show_id):
+            log.error("Warning: Issue matching %s on tvdb. Got %s and %s" % (show_name, tvdb_id, show_id))
         else:
-            log.info("Checking %s " % (show_name))
-            show = t[show_name]
-            show_id = show['id']
-            if int(tvdb_id) != int(show_id):
-                log.error("Warning: Issue matching %s on tvdb. Got %s and %s" % (show_name, tvdb_id, show_id))
+            show_status = show['status']
+            if show_status != status:
+                log.error("Show %s with local status %s is now %s on thetvdb" % (show_name, status, show_status))
+                to_fix.append(show_id)
             else:
-                show_status = show['status']
-                if show_status != status:
-                    log.error("Show %s with local status %s is now %s on thetvdb" % (show_name, status, show_status))
-                    to_fix.append(show_id)
-                else:
-                    log.info("Local status matches thetvdb: %s", status)
+                log.info("Local status matches thetvdb: %s", status)
 
     return to_fix
 
@@ -59,7 +56,7 @@ def read_sickbeard_sqlite_file(sqlite_file):
     conn = sqlite3.connect(sqlite_file)
     cur = conn.cursor()
     try:
-        cur.execute("select tvdb_id,show_name,status from tv_shows")
+        cur.execute("SELECT tvdb_id,show_name,status FROM tv_shows WHERE status != 'Continuing' ORDER BY show_name")
     except sqlite3.DatabaseError, msg:
         log.error("ERROR: Not a SickBeard sqlite file")
         sys.exit(-1)
