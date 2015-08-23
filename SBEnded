@@ -65,7 +65,7 @@ def read_sickbeard_sqlite_file(sqlite_file):
     cur = conn.cursor()
     try:
         cur.execute("SELECT tvdb_id,show_name,status FROM tv_shows WHERE status != 'Continuing' ORDER BY show_name")
-    except sqlite3.DatabaseError, msg:
+    except sqlite3.DatabaseError:
         log.error("ERROR: Not a SickBeard sqlite file")
         sys.exit(-1)
     shows = cur.fetchall()
