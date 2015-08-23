@@ -40,27 +40,27 @@ def check_shows(show_list):
     tvdb_conn = tvdb_api.Tvdb()
 
     for (tvdb_id, show_name, status) in show_list:
-        log.debug("Checking %s ", show_name)
+        LOG.debug("Checking %s ", show_name)
         try:
             show = tvdb_conn[show_name]
             show_id = show['id']
         except tvdb_exceptions.tvdb_shownotfound:
-            log.warn("Warning: Couldn't find show %s on tvdb", show_name)
+            LOG.warn("Warning: Couldn't find show %s on tvdb", show_name)
             continue
         except:
-            log.warn("Unknown error with show %s", show_name)
+            LOG.warn("Unknown error with show %s", show_name)
             continue
         if int(tvdb_id) != int(show_id):
-            log.error("Warning: Issue matching %s on tvdb. Got %s and %s",
+            LOG.error("Warning: Issue matching %s on tvdb. Got %s and %s",
                       show_name, tvdb_id, show_id)
         else:
             show_status = show['status']
             if show_status != status:
-                log.error("Show %s with local status %s is now %s on thetvdb",
+                LOG.error("Show %s with local status %s is now %s on thetvdb",
                           show_name, status, show_status)
                 mismatched.append(show_id)
             else:
-                log.debug("Local status matches thetvdb: %s", status)
+                LOG.debug("Local status matches thetvdb: %s", status)
 
     return mismatched
 
@@ -74,7 +74,7 @@ def read_sickbeard_sqlite_file(sqlite_file):
     try:
         cur.execute("SELECT tvdb_id,show_name,status FROM tv_shows WHERE status != 'Continuing' ORDER BY show_name")
     except sqlite3.DatabaseError:
-        log.error("ERROR: Not a SickBeard sqlite file")
+        LOG.error("ERROR: Not a SickBeard sqlite file")
         sys.exit(-1)
     our_shows = cur.fetchall()
 
@@ -98,8 +98,8 @@ def update_sickbeard_sqlite_file(sqlite_file, update_shows):
 
 if __name__ == "__main__":
 
-    log = logging.getLogger('SBEnded')
-    log.addHandler(logging.StreamHandler())
+    LOG = logging.getLogger('SBEnded')
+    LOG.addHandler(logging.StreamHandler())
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--sqlite-file', help='Sickbeard SQLite file to use',
@@ -111,12 +111,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.verbose:
-        log.setLevel(logging.DEBUG)
+        LOG.setLevel(logging.DEBUG)
     else:
-        log.setLevel(logging.INFO)
+        LOG.setLevel(logging.INFO)
 
     if not os.path.isfile(args.sqlite_file):
-        log.error("ERROR: %s is not a file", args.sqlite_file)
+        LOG.error("ERROR: %s is not a file", args.sqlite_file)
         sys.exit(-1)
 
     shows = read_sickbeard_sqlite_file(args.sqlite_file)
