@@ -37,22 +37,22 @@ def check_shows(shows):
     t = tvdb_api.Tvdb()
 
     for (tvdb_id, show_name, status) in shows:
-        log.info("Checking %s " % (show_name))
+        log.info("Checking %s ", show_name)
         try:
             show = t[show_name]
             show_id = show['id']
         except tvdb_exceptions.tvdb_shownotfound:
-            log.warn("Warning: Couldn't find show %s on tvdb" % (show_name))
+            log.warn("Warning: Couldn't find show %s on tvdb", show_name)
             continue
         except:
-            log.warn("Unknown error with show %s" % (show_name))
+            log.warn("Unknown error with show %s", show_name)
             continue
         if int(tvdb_id) != int(show_id):
-            log.error("Warning: Issue matching %s on tvdb. Got %s and %s" % (show_name, tvdb_id, show_id))
+            log.error("Warning: Issue matching %s on tvdb. Got %s and %s", show_name, tvdb_id, show_id)
         else:
             show_status = show['status']
             if show_status != status:
-                log.error("Show %s with local status %s is now %s on thetvdb" % (show_name, status, show_status))
+                log.error("Show %s with local status %s is now %s on thetvdb", show_name, status, show_status)
                 to_fix.append(show_id)
             else:
                 log.info("Local status matches thetvdb: %s", status)
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     if not os.path.isfile(sqlite_file):
-        log.error("ERROR: %s is not a file" % (sqlite_file))
+        log.error("ERROR: %s is not a file", sqlite_file)
         sys.exit(-1)
 
     shows = read_sickbeard_sqlite_file(sqlite_file)
