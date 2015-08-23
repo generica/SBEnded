@@ -31,18 +31,18 @@ import tvdb_exceptions
 import logging
 
 
-def check_shows(shows):
+def check_shows(show_list):
     ''' Take a list of shows to check on tvdb, and return those that
         need fixing
     '''
 
-    to_fix = []
-    t = tvdb_api.Tvdb()
+    mismatched = []
+    tvdb_conn = tvdb_api.Tvdb()
 
-    for (tvdb_id, show_name, status) in shows:
+    for (tvdb_id, show_name, status) in show_list:
         log.info("Checking %s ", show_name)
         try:
-            show = t[show_name]
+            show = tvdb_conn[show_name]
             show_id = show['id']
         except tvdb_exceptions.tvdb_shownotfound:
             log.warn("Warning: Couldn't find show %s on tvdb", show_name)
@@ -58,11 +58,11 @@ def check_shows(shows):
             if show_status != status:
                 log.error("Show %s with local status %s is now %s on thetvdb",
                           show_name, status, show_status)
-                to_fix.append(show_id)
+                mismatched.append(show_id)
             else:
                 log.info("Local status matches thetvdb: %s", status)
 
-    return to_fix
+    return mismatched
 
 
 def read_sickbeard_sqlite_file(sqlite_file):
