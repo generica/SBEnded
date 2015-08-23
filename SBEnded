@@ -27,6 +27,7 @@ import getopt
 import os
 import sqlite3
 import tvdb_api
+import tvdb_exceptions
 import logging
 
 
@@ -37,8 +38,15 @@ def check_shows(shows):
 
     for (tvdb_id, show_name, status) in shows:
         log.info("Checking %s " % (show_name))
-        show = t[show_name]
-        show_id = show['id']
+        try:
+            show = t[show_name]
+            show_id = show['id']
+        except tvdb_exceptions.tvdb_shownotfound:
+            log.warn("Warning: Couldn't find show %s on tvdb" % (show_name))
+            continue
+        except:
+            log.warn("Unknown error with show %s" % (show_name))
+            continue
         if int(tvdb_id) != int(show_id):
             log.error("Warning: Issue matching %s on tvdb. Got %s and %s" % (show_name, tvdb_id, show_id))
         else:
