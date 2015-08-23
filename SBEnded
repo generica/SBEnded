@@ -48,11 +48,13 @@ def check_shows(shows):
             log.warn("Unknown error with show %s", show_name)
             continue
         if int(tvdb_id) != int(show_id):
-            log.error("Warning: Issue matching %s on tvdb. Got %s and %s", show_name, tvdb_id, show_id)
+            log.error("Warning: Issue matching %s on tvdb. Got %s and %s",
+                      show_name, tvdb_id, show_id)
         else:
             show_status = show['status']
             if show_status != status:
-                log.error("Show %s with local status %s is now %s on thetvdb", show_name, status, show_status)
+                log.error("Show %s with local status %s is now %s on thetvdb",
+                          show_name, status, show_status)
                 to_fix.append(show_id)
             else:
                 log.info("Local status matches thetvdb: %s", status)
