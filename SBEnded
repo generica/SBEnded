@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import sys
-import getopt
+import argparse
 import os
 import sqlite3
 import tvdb_api
@@ -40,7 +40,7 @@ def check_shows(show_list):
     tvdb_conn = tvdb_api.Tvdb()
 
     for (tvdb_id, show_name, status) in show_list:
-        log.info("Checking %s ", show_name)
+        log.debug("Checking %s ", show_name)
         try:
             show = tvdb_conn[show_name]
             show_id = show['id']
@@ -60,7 +60,7 @@ def check_shows(show_list):
                           show_name, status, show_status)
                 mismatched.append(show_id)
             else:
-                log.info("Local status matches thetvdb: %s", status)
+                log.debug("Local status matches thetvdb: %s", status)
 
     return mismatched
 
@@ -76,74 +76,51 @@ def read_sickbeard_sqlite_file(sqlite_file):
     except sqlite3.DatabaseError:
         log.error("ERROR: Not a SickBeard sqlite file")
         sys.exit(-1)
-    shows = cur.fetchall()
+    our_shows = cur.fetchall()
 
     conn.close()
 
-    return shows
+    return our_shows
 
 
-def update_sickbeard_sqlite_file(sqlite_file, shows):
+def update_sickbeard_sqlite_file(sqlite_file, update_shows):
     ''' Update the status of local sqlite file for some shows
     '''
 
     conn = sqlite3.connect(sqlite_file)
     cur = conn.cursor()
-    for show in shows:
+    for show in update_shows:
         cur.execute("update tv_shows set status = 'Continuing' where tvdb_id = %s" % show)
 
     conn.commit()
     conn.close()
 
-    return shows
-
-
-def usage():
-    print "usage: SBEnded [-v] [-h] [-f] -s <sqlite file>"
-    print "   -s : sqlite file to use"
-    print "   -f : fix local status"
-    print "   -v : verbose"
-    print "   -h : help"
-
 
 if __name__ == "__main__":
-
-    sqlite_file = False
-    fix = False
 
     log = logging.getLogger('SBEnded')
     log.addHandler(logging.StreamHandler())
 
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'vhfs:')
-    except getopt.GetoptError, err:
-        log.error(str(err))
-        usage()
-        sys.exit(2)
-    opts = dict(opts)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--sqlite-file', help='Sickbeard SQLite file to use',
+                        required=True, action='store')
+    parser.add_argument('-f', '--fix-local', help='Fix local status when necessary',
+                        action='store_true')
+    parser.add_argument('-v', '--verbose', help='Increase verbosity', action='store_true')
 
-    if '-v' in opts:
+    args = parser.parse_args()
+
+    if args.verbose:
+        log.setLevel(logging.DEBUG)
+    else:
         log.setLevel(logging.INFO)
 
-    if '-f' in opts:
-        fix = True
-
-    if '-h' in opts:
-        usage()
-        sys.exit(1)
-
-    if '-s' in opts:
-        sqlite_file = opts['-s']
-    else:
-        usage()
-        sys.exit(1)
-
-    if not os.path.isfile(sqlite_file):
-        log.error("ERROR: %s is not a file", sqlite_file)
+    if not os.path.isfile(args.sqlite_file):
+        log.error("ERROR: %s is not a file", args.sqlite_file)
         sys.exit(-1)
 
-    shows = read_sickbeard_sqlite_file(sqlite_file)
+    shows = read_sickbeard_sqlite_file(args.sqlite_file)
     to_fix = check_shows(shows)
 
-    if fix:
-        update_sickbeard_sqlite_file(sqlite_file, to_fix)
+    if args.fix_local:
+        update_sickbeard_sqlite_file(args.sqlite_file, to_fix)
