@@ -32,6 +32,9 @@ import logging
 
 
 def check_shows(shows):
+    ''' Take a list of shows to check on tvdb, and return those that
+        need fixing
+    '''
 
     to_fix = []
     t = tvdb_api.Tvdb()
@@ -63,6 +66,9 @@ def check_shows(shows):
 
 
 def read_sickbeard_sqlite_file(sqlite_file):
+    ''' Read all shows from the sqlite file
+    '''
+
     conn = sqlite3.connect(sqlite_file)
     cur = conn.cursor()
     try:
@@ -78,6 +84,9 @@ def read_sickbeard_sqlite_file(sqlite_file):
 
 
 def update_sickbeard_sqlite_file(sqlite_file, shows):
+    ''' Update the status of local sqlite file for some shows
+    '''
+
     conn = sqlite3.connect(sqlite_file)
     cur = conn.cursor()
     for show in shows:
