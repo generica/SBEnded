@@ -26,9 +26,9 @@ import sys
 import argparse
 import os
 import sqlite3
+import logging
 import tvdb_api
 import tvdb_exceptions
-import logging
 
 
 def check_shows(show_list):
@@ -96,19 +96,11 @@ def update_sickbeard_sqlite_file(sqlite_file, update_shows):
     conn.close()
 
 
-if __name__ == "__main__":
+def main():
+    ''' Do some work
+    '''
 
-    LOG = logging.getLogger('SBEnded')
-    LOG.addHandler(logging.StreamHandler())
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--sqlite-file', help='Sickbeard SQLite file to use',
-                        required=True, action='store')
-    parser.add_argument('-f', '--fix-local', help='Fix local status when necessary',
-                        action='store_true')
-    parser.add_argument('-v', '--verbose', help='Increase verbosity', action='store_true')
-
-    args = parser.parse_args()
+    args = parse_args()
 
     if args.verbose:
         LOG.setLevel(logging.DEBUG)
@@ -124,3 +116,25 @@ if __name__ == "__main__":
 
     if args.fix_local:
         update_sickbeard_sqlite_file(args.sqlite_file, to_fix)
+
+
+def parse_args():
+    ''' See what we're wanting to do
+    '''
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--sqlite-file', help='Sickbeard SQLite file to use',
+                        required=True, action='store')
+    parser.add_argument('-f', '--fix-local', help='Fix local status when necessary',
+                        action='store_true')
+    parser.add_argument('-v', '--verbose', help='Increase verbosity', action='store_true')
+
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+
+    LOG = logging.getLogger('SBEnded')
+    LOG.addHandler(logging.StreamHandler())
+
+    main()
